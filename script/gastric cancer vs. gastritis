@@ -22,7 +22,7 @@ GGY_tss_150[is.na(GGY_tss_150)]<-0
 GGY_tss_150<-as.data.frame(GGY_tss_150)
 TT_tss_150<-cbind(TT_tss_150,GGY_tss_150)
 
-#######早期胃癌与萎缩性与非萎缩性胃炎
+#######
 patient_info<-read.table(file='/Share2/home/lanxun3/jacklee/cfDNA/gbm/patient_info.txt',sep='\t',header=T,quote='',na.strings='')
 stage_sample1<-patient_info[patient_info$Stage%in%c('Ia','Ib'),]$research
 stage_sample2<-patient_info[patient_info$Stage%in%c('IIa','IIb'),]$research
@@ -85,7 +85,7 @@ gastric_late_genes<-rownames(gastric_late_DEG[gastric_late_DEG$adj.P.Val<=0.05&g
 atrophic_genes<-rownames(atrophic_DEG[atrophic_DEG$adj.P.Val<=0.05&atrophic_DEG$logFC<=0,])
 non_atrophic_genes<-rownames(non_atrophic_DEG[non_atrophic_DEG$adj.P.Val<=0.05&non_atrophic_DEG$logFC<= 0,])
 length(intersect(gastric_early_genes,atrophic_genes))
-##韦恩图/http://biovenn.nl/index.php
+
 #x<-list(gastric_early=gastric_early_genes,gastric_mediangastric_median_genes,gastric_late=gastric_late_genes,atrophic=atrophic_genes,non_atrophic=non_atrophic_genes)
 x <- list(signature_genes=tss_signature,gastric=gastric_genes,TT=TT_genes)
 library(ggvenn)
@@ -149,13 +149,9 @@ pdf('gastric_gastritis_vs_healthy_pathway.pdf',width=12,height=6)
 library(ggplot2)
 p = ggplot(final_frame,aes(Description,group))
 p=p + geom_point()  
-# 修稿点的大小
 p=p + geom_point(aes(size=Count))
-# 展示三维数据
 pbubble = p+ geom_point(aes(size=Count,color=pvalue))
-# 设置渐变色
 pr = pbubble+scale_color_gradient(low="red",high = "blue")
-# 绘制p气泡图
 pr = pr+labs(color=expression(pvalue),size="Count",  
                            x="Pathway name",y="group",title="Pathway enrichment")
 pr + theme_bw()
@@ -232,7 +228,7 @@ pheatmap(frame_p,cluster_cols = F,cluster_rows = F,
 color = colorRampPalette(c("#D45252",'#FFA500',"white"))(50),show_colnames = F,
 gaps_row = length(unlist(temp_signature_1)))
 dev.off()
-###饼状图,p值占比
+
 pdf('pathway_pie_c.pdf')
 pie_df<-data.frame(annotation_row[,1],b,c)
 par(mfrow=c(5,3))
