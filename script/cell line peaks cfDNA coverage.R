@@ -13,7 +13,7 @@ write.table(peak_bed_up1000_start,file="peak_bed_up1000_start.bed",sep="\t",quot
 write.table(peak_bed_start_end,file="peak_bed_start_end.bed",sep="\t",quote = F,col.names =F,row.names=F)
 write.table(peak_bed_end_down1000,file="peak_bed_end_down1000.bed",sep="\t",quote = F,col.names =F,row.names=F)
 
-##cfDNA coverage的变化
+##
 options(stringsAsFactors=F)
 setwd("/Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA")
 patient_sample<-list.dirs(full.names = FALSE,recursive = F)
@@ -27,7 +27,7 @@ sep="\t",header=F)
 
 patient_peak<-list()
 for(i in 1:dim(peak_bed)[1]){
-##上游1000-start和下游end-1000用于做金标准
+##
 peak_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/experiment/ATAC/GSE_1_ATAC/peaks/peak_bed_up1000_start.bed",
 sep="\t",header=F)
 system(paste0("/Share2/home/lanxun/Tools/samtools-1.3.1/bin/bin/samtools",
@@ -117,7 +117,7 @@ new_peak_100[[i]]<-NA
 }
 save(new_peak_100,file='new_peak_100bp.Rdata',version =2)
 
-###ATAC峰拟合
+###
 options(stringsAsFactors=F)
 setwd('/Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA/MKN28_cfDNA_5h')
 peak_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/experiment/ATAC/SGC7901_ATAC_2/peaks/SGC7901_ATAC_2_peak_peaks.narrowPeak",sep="\t",header=F)
