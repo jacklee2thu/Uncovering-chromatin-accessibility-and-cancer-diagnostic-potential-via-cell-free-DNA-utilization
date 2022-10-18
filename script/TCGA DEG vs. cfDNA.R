@@ -38,7 +38,7 @@ save(DEG_voom,file="TCGA_diff.Rdata")
 new_signature<-c('RAE1','GPR85','CALU','AK9','TRAF2','PAPD4','ABCA10','LRRIQ1','SPECC1','MEIS2')
 new_signature<-c('CACNA1B','ASAP2','KREMEN1','FGFR3','CDH4','SRCIN1','SNRPN','CTD-2021H9.3','ANKS1B','WNT4')
 
-#######火山图
+#######
 temp_frame<-DEG_voom
 fc=2
 temp_frame$threshold<-0
