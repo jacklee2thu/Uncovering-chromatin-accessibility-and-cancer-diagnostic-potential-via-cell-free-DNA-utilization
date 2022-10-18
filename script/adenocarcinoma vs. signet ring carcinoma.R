@@ -31,7 +31,7 @@ DEG_voom = na.omit(tempOutput)
 save(DEG_voom,file='TCGA/signet_ring_vs_Adenocarcinoma_DEG.Rdata')
 DEG_voom$signet_mean<-apply(signet_ring_tss_150[rownames(DEG_voom),],1,mean)
 DEG_voom$Adenocarcinoma_mean<-apply(Adenocarcinoma_tss_150[rownames(DEG_voom),],1,mean)
-######火山图
+######
 signet_ring_up_signature<-rownames(DEG_voom[DEG_voom$logFC<=0&DEG_voom$P.Value<=0.05&DEG_voom$signet_mean<1&DEG_voom$Adenocarcinoma_mean>1,])
 Adenocarcinoma_up_signature<-rownames(DEG_voom[DEG_voom$logFC>=0&DEG_voom$P.Value<=0.05&DEG_voom$Adenocarcinoma_mean<1&DEG_voom$signet_mean>1,])
 DEG_voom$threshold<-rep(0,dim(DEG_voom)[1])
@@ -63,7 +63,7 @@ gg<-gg+ geom_hline(aes(yintercept=0), colour="black")+geom_vline(aes(xintercept=
 gg+theme_bw()+theme(axis.line = element_line(size=1, colour = "black"),panel.border = element_blank()
 ,panel.grid.major=element_blank(),panel.grid.minor=element_blank(),legend.position="none")
 dev.off()
-##########功能富集
+##########
 library(org.Hs.eg.db)
 k=keys(org.Hs.eg.db,keytype = "ENSEMBL")
 list=select(org.Hs.eg.db,keys=k,columns = c("ENTREZID","SYMBOL"), keytype="ENSEMBL")
@@ -97,7 +97,7 @@ setwd('/Share2/home/lanxun3/jacklee/cfDNA/gbm/TCGA')
 write.table(KEGG_gene@result,file='Adenocarcinoma_up_signature_KEGG_gene.txt',sep='\t',row.names = F,col.names = T,quote = F)
 write.table(GO_gene@result,file='Adenocarcinoma_up_signature_GO_gene.txt',sep='\t',row.names = F,col.names = T,quote = F) 
 save(KEGG_gene,GO_gene,file='Adenocarcinoma_up_signature_function.Rdata')
-#####气泡图
+#####
 setwd('/Share2/home/lanxun3/jacklee/cfDNA/gbm/TCGA')
 load('signet_ring_up_signature_function.Rdata')
 load('Adenocarcinoma_up_signature_function.Rdata')
@@ -124,13 +124,9 @@ pdf('signet_ring_vs_Adenocarcinoma_pathway.pdf',width=12,height=6)
 library(ggplot2)
 p = ggplot(final_frame,aes(Description,group))
 p=p + geom_point()  
-# 修稿点的大小
 p=p + geom_point(aes(size=Count))
-# 展示三维数据
 pbubble = p+ geom_point(aes(size=Count,color=pvalue))
-# 设置渐变色
 pr = pbubble+scale_color_gradient(low="red",high = "blue")
-# 绘制p气泡图
 pr = pr+labs(color=expression(pvalue),size="Count",  
                            x="Pathway name",y="group",title="Pathway enrichment")
 pr + theme_bw()
