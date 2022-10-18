@@ -1,6 +1,5 @@
 ##ArchR
 options(stringsAsFactors=F)
-# setwd('E:/科研/singlecell_ATAC_case')
 setwd('/Share2/home/lanxun3/jacklee/cfDNA/singlecell_ATAC/temp_data')
 inputFiles<-as.character(c("/Share2/home/lanxun3/jacklee/cfDNA/singlecell_ATAC/Stomach_normal1/GSM5589404_stomach_SM-CHLWL_rep1_fragments_final.tsv.gz",
 "/Share2/home/lanxun3/jacklee/cfDNA/singlecell_ATAC/Stomach_normal2/GSM5589405_stomach_SM-IOBHV_rep1_fragments_final.tsv.gz",
@@ -34,8 +33,7 @@ proj <- ArchRProject(
   outputDirectory = "singlecellATAC",
   copyArrows = F #This is recommened so that you maintain an unaltered copy for later usage.
 )
-proj <- filterDoublets(ArchRProj = proj)##去除双细胞
-###降维与聚类/PeakMatrix/TileMatrix
+proj <- filterDoublets(ArchRProj = proj)##
 proj <- addIterativeLSI(ArchRProj = proj, useMatrix = "TileMatrix", 
 name = "IterativeLSI",clusterParams = list(resolution = c(20), sampleCells = 10000, maxClusters = 25, n.start= 10))
 proj_addHarmony <- addHarmony(
@@ -46,7 +44,7 @@ proj_addHarmony <- addHarmony(
 )
 proj_addClusters <- addClusters(input = proj_addHarmony, reducedDims = "IterativeLSI",maxClusters =50,knnAssign = 25)
 proj_addClusters <- addClusters(input = proj, reducedDims = "IterativeLSI",maxClusters =50)
-##画图
+##
 proj_addUMAP <- addUMAP(ArchRProj = proj_addClusters, reducedDims = "IterativeLSI")
 proj_umap <- saveArchRProject(ArchRProj = proj_addUMAP)
 proj_addUMAP <- loadArchRProject(path = "/Share2/home/lanxun3/jacklee/cfDNA/singlecell_ATAC/temp_data/singlecellATAC")
@@ -98,7 +96,7 @@ pal=c('B'='#1AB4B8','T'='#ED877F','Endocrine'='#E06AA4','normal Epithelial'='#EE
 ggAlignPlots(p3, type = "h")
 plotPDF(p3, name = "singlecellATAC-UMAP-cell.pdf",
         ArchRProj = proj_addUMAP, addDOC = FALSE, width = 5, height = 5)
-#######识别marker gene
+#######
 markerGenes  <- c('KRT18','EPCAM','CD3D','CD68','AIF1','CHGA','CDH5',
 'ENG','PECAM1','DCN','ID2','MS4A1','CD79A','IGLL5','CPA3')
 
@@ -149,7 +147,7 @@ dev.off()
 markerList <- getMarkers(markersGS, cutOff = "FDR <= 0.01 & Log2FC >= 1")
 
 
-###########展示marker gene 热图
+###########
 heatmapGS <- plotMarkerHeatmap(
   seMarker = markersGS, 
   cutOff = "FDR <= 0.01 & Log2FC >= 1", 
@@ -161,7 +159,7 @@ ComplexHeatmap::draw(heatmapGS, heatmap_legend_side = "bot", annotation_legend_s
 plotPDF(heatmapGS, name = "GeneScores-Marker-Heatmap", width = 8, height = 6, ArchRProj =proj, addDOC = FALSE)
 
 
-##给cluster增加gene 得分
+##
 proj_addImputeWeights <- addImputeWeights(proj_addUMAP)
 markerGenes  <- c('KRT18','EPCAM','MUC6','CD3D','CD68','AIF1','CHGA','CDH5','ENG','PECAM1','DCN','ID2','MS4A1','CD79A','IGLL5','CPA3')
 markerGenes  <- c('RAE1','GPR85','CALU','AK9','TRAF2','TENT2','ABCA10','LRRIQ1','SPECC1','MEIS2')
@@ -204,7 +202,7 @@ colorMat <- ArchR:::.getMatrixValues(ArchRProj = ArchRProj, name = name,matrixNa
 colorMat <- imputeMatrix(mat = as.matrix(colorMat),imputeWeights = imputeWeights)
 save(colorMat,file='colorMat.Rdata')
 	
-#########gene score 在Epithelial和Epithelial_n中比较
+#########
 setwd('/Share2/home/lanxun3/jacklee/cfDNA/singlecell_ATAC/temp_data')
 load('colorMat.Rdata')
 markerGenes  <- c('RAE1','GPR85','CALU','AK9','TRAF2','TENT2','ABCA10','LRRIQ1','SPECC1','MEIS2')
@@ -258,7 +256,7 @@ dev.off()
 
 
 
-##########从browser track里看基因开放性
+##########
 p <- plotBrowserTrack(
     ArchRProj = proj_addImputeWeights, 
     groupBy = "celltype", 
