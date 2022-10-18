@@ -25,7 +25,7 @@ stage_sample<-patient_info[patient_info$Stage%in%c('IIa','IIb'),]$research
 stage_sample<-patient_info[patient_info$Stage%in%c('IIIa','IIIb','IIIc','IV'),]$research
 gastric_sample<-intersect(gastric_sample,stage_sample)
 features.sl<-features.sl[c(gastric_sample,xiehe_sample),]
-######gbm模型
+######gbm
 
 library(tidyverse)
 library(caret)
@@ -37,7 +37,7 @@ type_name<-rep(0,dim(features.sl)[1])
 type_name[xiehe_index]<-'Healthy'
 type_name[gastric_index]<-'Cancer'
 type_name<-factor(type_name,levels=c('Cancer','Healthy'))
-i<-12345693#探针12345689
+i<-12345693
 set.seed(i)
 inTrain = createDataPartition(type_name, p = 3/4, list = FALSE)
 trainx = features.sl[inTrain,]
@@ -45,9 +45,9 @@ testx = features.sl[-inTrain,]
 trainy = type_name[inTrain]
 testy = type_name[-inTrain]
 
-####若变量过多则进行特征选择
+####
 
-subsets = c(20,50,100)####特征个数选择
+subsets = c(20,50,100)####
 ctrl= rfeControl(functions = rfFuncs,method = 'cv',verbose = FALSE,returnResamp = 'final')
 Profile = rfe(trainx, trainy, sizes = subsets, rfeControl = ctrl)
 if(length(Profile$optVariables)>=101){
@@ -132,7 +132,7 @@ df <- data.frame(Curve=as.factor(rep(c(1), each=length(perf1@x.values[[1]]))),
 pdf('tss150_STAD_train_ROC.pdf')
 ggplot(df, aes(x=FalsePositive, y=TruePositive, color=Curve)) +ggtitle(paste0("ROC Curve  AUC=", auc_ROCR@y.values[[1]]))+ geom_line()+theme_bw()+theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
 dev.off()
-######测试集
+######
 
 predict(model_gbm, newdata = testx)[1:5]
 models<-list(model_gbm)
@@ -162,7 +162,7 @@ df <- data.frame(Curve=as.factor(rep(c(1), each=length(perf1@x.values[[1]]))),
 pdf('tss150_ROC.pdf')
 ggplot(df, aes(x=FalsePositive, y=TruePositive, color=Curve)) + geom_line()+theme_bw()+theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank(),legend.position='none')
 dev.off()
-##stage Ⅰ的confusion matrix
+##
 temp_frame<-cbind(rownames(testx),pred.tbl)
 early_frame<-rbind(temp_frame[temp_frame[,1]%in%intersect(temp_frame[,1],c(stage_sample1,stage_sample2)),],temp_frame[26:77,])
 confusion_matrix<-confusionMatrix(early_frame[,3], early_frame[,2])
