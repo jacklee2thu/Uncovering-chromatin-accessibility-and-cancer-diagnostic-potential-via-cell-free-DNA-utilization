@@ -32,7 +32,7 @@ DEG_voom$lym_mean<-apply(lym_node_tss_150[rownames(DEG_voom),],1,mean)
 DEG_voom$nolym_mean<-apply(no_lym_node_tss_150[rownames(DEG_voom),],1,mean)
 save(DEG_voom,file='TCGA/lym_node_vs_no_lym_node_DEG.Rdata')
 
-#淋巴转移与神经侵犯以及脉管侵犯的关系
+#
 patient_info$lymph<-rep(0,dim(patient_info)[1])
 patient_info[patient_info$research%in%lym_node_sample,]$lymph<-1
 table(patient_info$lymph,patient_info$nerve.invasion)
@@ -41,7 +41,7 @@ table(patient_info$lymph,patient_info$capillary.invasion)
 fisher.test(table(patient_info$lymph,patient_info$capillary.invasion))
 
 
-######火山图
+######
 lym_node_up_signature<-rownames(DEG_voom[DEG_voom$logFC<=0&DEG_voom$P.Value<=0.05&DEG_voom$lym_mean<1&DEG_voom$nolym_mean>1,])
 no_lym_node_up_signature<-rownames(DEG_voom[DEG_voom$logFC>=0&DEG_voom$P.Value<=0.05&DEG_voom$lym_mean>1&DEG_voom$nolym_mean<1,])
 DEG_voom$threshold<-rep(0,dim(DEG_voom)[1])
@@ -73,7 +73,7 @@ gg<-gg+ geom_hline(aes(yintercept=0), colour="black")+geom_vline(aes(xintercept=
 gg+theme_bw()+theme(axis.line = element_line(size=1, colour = "black"),panel.border = element_blank()
 ,panel.grid.major=element_blank(),panel.grid.minor=element_blank(),legend.position="none")
 dev.off()
-##########功能富集
+##########
 library(org.Hs.eg.db)
 k=keys(org.Hs.eg.db,keytype = "ENSEMBL")
 list=select(org.Hs.eg.db,keys=k,columns = c("ENTREZID","SYMBOL"), keytype="ENSEMBL")
@@ -107,7 +107,7 @@ setwd('/Share2/home/lanxun3/jacklee/cfDNA/gbm/TCGA')
 write.table(KEGG_gene@result,file='no_lym_node_up_signature_KEGG_gene.txt',sep='\t',row.names = F,col.names = T,quote = F)
 write.table(GO_gene@result,file='no_lym_node_up_signature_GO_gene.txt',sep='\t',row.names = F,col.names = T,quote = F) 
 save(KEGG_gene,GO_gene,file='no_lym_node_up_signature_function.Rdata')
-#####气泡图
+#####
 setwd('/Share2/home/lanxun3/jacklee/cfDNA/gbm/TCGA')
 load('lym_node_up_signature_function.Rdata')
 load('no_lym_node_up_signature_function.Rdata')
@@ -134,18 +134,14 @@ pdf('lym_node_vs_no_lym_node_pathway.pdf',width=10,height=10)
 library(ggplot2)
 p = ggplot(final_frame,aes(group,Description))
 p=p + geom_point()  
-# 修稿点的大小
 p=p + geom_point(aes(size=Count))
-# 展示三维数据
 pbubble = p+ geom_point(aes(size=Count,color=pvalue))
-# 设置渐变色
 pr = pbubble+scale_color_gradient(low="red",high = "blue")
-# 绘制p气泡图
 pr = pr+labs(color=expression(pvalue),size="Count",  
                            x="group",y="Pathway name",title="Pathway enrichment")
 pr + theme_bw()
 dev.off()
-##TGFB1
+##
 index<-which(tss_pro_table$gene_name=='TGFB1')
 i=1
 df<-data.frame(c(as.numeric(lym_node_tss_150[index[i],]),as.numeric(no_lym_node_tss_150[index[i],])),
