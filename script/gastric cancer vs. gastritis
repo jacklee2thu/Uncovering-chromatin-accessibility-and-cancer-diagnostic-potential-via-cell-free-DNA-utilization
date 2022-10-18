@@ -1,0 +1,244 @@
+options(stringsAsFactors=F)
+setwd('/Share2/home/lanxun3/jacklee/cfDNA/gbm/TCGA')
+load('../gastric_sample_tss_150.Rdata')
+gastric_tss_150<-temp_tss_150
+load('../healthy_sample_tss_150.Rdata')
+healthy_tss_150<-temp_tss_150
+load('../TT_sample_tss_150.Rdata')
+TT_tss_150<-temp_tss_150
+load('../GGY_sample_tss_150.Rdata')
+GGY_tss_150<-temp_tss_150
+rownames(gastric_tss_150)<-paste0("tss_150_", 1:70641)
+gastric_tss_150[is.na(gastric_tss_150)]<-0
+gastric_tss_150<-as.data.frame(gastric_tss_150)
+rownames(healthy_tss_150)<-paste0("tss_150_", 1:70641)
+healthy_tss_150[is.na(healthy_tss_150)]<-0
+healthy_tss_150<-as.data.frame(healthy_tss_150)
+rownames(TT_tss_150)<-paste0("tss_150_", 1:70641)
+TT_tss_150[is.na(TT_tss_150)]<-0
+TT_tss_150<-as.data.frame(TT_tss_150)
+rownames(GGY_tss_150)<-paste0("tss_150_", 1:70641)
+GGY_tss_150[is.na(GGY_tss_150)]<-0
+GGY_tss_150<-as.data.frame(GGY_tss_150)
+TT_tss_150<-cbind(TT_tss_150,GGY_tss_150)
+
+#######早期胃癌与萎缩性与非萎缩性胃炎
+patient_info<-read.table(file='/Share2/home/lanxun3/jacklee/cfDNA/gbm/patient_info.txt',sep='\t',header=T,quote='',na.strings='')
+stage_sample1<-patient_info[patient_info$Stage%in%c('Ia','Ib'),]$research
+stage_sample2<-patient_info[patient_info$Stage%in%c('IIa','IIb'),]$research
+stage_sample3<-patient_info[patient_info$Stage%in%c('IIIa','IIIb','IIIc','IV'),]$research
+gastric_sample<-colnames(gastric_tss_150)
+gastric_sample<-intersect(gastric_sample,stage_sample)
+atrophic_gastritis_sample<-colnames(TT_tss_150)[c(27,12,1,8,16)]
+non_atrophic_gastritis_sample<-colnames(TT_tss_150)[setdiff(1:dim(TT_tss_150)[2],c(27,12,1,8,16))]
+
+######
+#temp_tss_150<-TT_tss_150[,stage_sample]
+library(limma)
+group_list=c(rep(1,dim(temp_tss_150)[2]),rep(0,dim(healthy_tss_150)[2]))
+exprSet<-cbind(temp_tss_150,healthy_tss_150)
+design <- model.matrix(~factor(group_list))
+colnames(design)=levels(factor(group_list))
+rownames(design)=colnames(exprSet)
+v <- voom(exprSet,design,normalize="quantile")
+fit <- lmFit(v,design)
+fit2 <- eBayes(fit)
+tempOutput = topTable(fit2, coef=2, n=Inf)
+DEG_voom = na.omit(tempOutput)
+
+save(DEG_voom,file='gastric_vs_healthy.Rdata')
+save(DEG_voom,file='TT_vs_healthy.Rdata')
+
+save(DEG_voom,file='gastric-early_vs_healthy.Rdata')
+save(DEG_voom,file='gastric-median_vs_healthy.Rdata')
+save(DEG_voom,file='gastric-late_vs_healthy.Rdata')
+save(DEG_voom,file='atrophic_vs_healthy.Rdata')
+save(DEG_voom,file='non_atrophic_vs_healthy.Rdata')
+##
+load('gastric_vs_healthy.Rdata')
+gastric_DEG<-DEG_voom
+load('TT_vs_healthy.Rdata')
+TT_DEG<-DEG_voom
+load('/Share2/home/lanxun3/jacklee/pancancer_cfDNA/gbm/breast_vs_healthy.Rdata')
+breast_genes<-rownames(DEG_voom[DEG_voom$adj.P.Val<=0.05&DEG_voom$logFC<=0,])
+load('/Share2/home/lanxun3/jacklee/pancancer_cfDNA/gbm/COAD_vs_healthy.Rdata')
+coad_genes<-rownames(DEG_voom[DEG_voom$adj.P.Val<=0.05&DEG_voom$logFC<=0,])
+gastric_genes<-rownames(gastric_DEG[gastric_DEG$adj.P.Val<=0.05&gastric_DEG$logFC<=0,])
+TT_genes<-rownames(TT_DEG[TT_DEG$adj.P.Val<=0.05&TT_DEG$logFC<= 0,])
+write.table(TT_genes,file='TT_genes.txt',row.names=F,col.names=F,quote=F,sep='\t')
+load('../signature_genes.Rdata')
+length(intersect(gastric_genes,TT_genes))
+##
+load('gastric-early_vs_healthy.Rdata')
+gastric_early_DEG<-DEG_voom
+load('gastric-median_vs_healthy.Rdata')
+gastric_median_DEG<-DEG_voom
+load('gastric-late_vs_healthy.Rdata')
+gastric_late_DEG<-DEG_voom
+load('atrophic_vs_healthy.Rdata')
+atrophic_DEG<-DEG_voom
+load('non_atrophic_vs_healthy.Rdata')
+non_atrophic_DEG<-DEG_voom
+gastric_early_genes<-rownames(gastric_early_DEG[gastric_early_DEG$adj.P.Val<=0.05&gastric_early_DEG$logFC<=0,])
+gastric_median_genes<-rownames(gastric_median_DEG[gastric_median_DEG$adj.P.Val<=0.05&gastric_median_DEG$logFC<=0,])
+gastric_late_genes<-rownames(gastric_late_DEG[gastric_late_DEG$adj.P.Val<=0.05&gastric_late_DEG$logFC<=0,])
+atrophic_genes<-rownames(atrophic_DEG[atrophic_DEG$adj.P.Val<=0.05&atrophic_DEG$logFC<=0,])
+non_atrophic_genes<-rownames(non_atrophic_DEG[non_atrophic_DEG$adj.P.Val<=0.05&non_atrophic_DEG$logFC<= 0,])
+length(intersect(gastric_early_genes,atrophic_genes))
+##韦恩图/http://biovenn.nl/index.php
+#x<-list(gastric_early=gastric_early_genes,gastric_mediangastric_median_genes,gastric_late=gastric_late_genes,atrophic=atrophic_genes,non_atrophic=non_atrophic_genes)
+x <- list(signature_genes=tss_signature,gastric=gastric_genes,TT=TT_genes)
+library(ggvenn)
+ggvenn(x,c('signature_genes',"gastric","TT"))
+library(ggVennDiagram)
+ggVennDiagram(x,label_alpha = 0) +
+  ggplot2::scale_fill_gradient(low = "white",high = "#c9504f")
+ggplot2::ggsave(file = "gastric_TT_ven.pdf")
+
+######
+###########
+library(org.Hs.eg.db)
+k=keys(org.Hs.eg.db,keytype = "ENSEMBL")
+list=select(org.Hs.eg.db,keys=k,columns = c("ENTREZID","SYMBOL"), keytype="ENSEMBL")
+index<-unlist(lapply(strsplit(TT_genes,'_'),function(x){x[[3]]}))
+load("/Share2/home/lanxun3/jacklee/cfDNA/tss/all_pro_tss/tss_pro_table.Rdata")
+up_gastric_genes<-tss_pro_table[as.numeric(index),]$gene_name
+pro_entrezid=list[match(unique(up_gastric_genes),list[,"SYMBOL"]),][,2]
+
+library(clusterProfiler)
+KEGG_gene<-enrichKEGG(pro_entrezid,organism = "hsa", pvalueCutoff = 0.05)
+KEGG_gene<-setReadable(KEGG_gene,OrgDb='org.Hs.eg.db',keyType='ENTREZID')
+GO_gene<-enrichGO(pro_entrezid,'org.Hs.eg.db',ont = "BP", pvalueCutoff = 0.05)
+GO_gene<-setReadable(GO_gene,OrgDb='org.Hs.eg.db',keyType='ENTREZID')
+
+write.table(KEGG_gene@result,file='gastritis_KEGG_gene.txt',sep='\t',row.names = F,col.names = T,quote = F)
+write.table(GO_gene@result,file='gastritis_GO_gene.txt',sep='\t',row.names = F,col.names = T,quote = F) 
+save(KEGG_gene,GO_gene,file='gastric_cancer_function.Rdata')
+save(KEGG_gene,GO_gene,file='gastritis_function.Rdata')
+save(KEGG_gene,GO_gene,file='gastric_early_function.Rdata')
+save(KEGG_gene,GO_gene,file='gastric_late_function.Rdata')
+save(KEGG_gene,GO_gene,file='atrophic_function.Rdata')
+save(KEGG_gene,GO_gene,file='non_atrophic_function.Rdata')
+load('/Share2/home/lanxun3/jacklee/pancancer_cfDNA/gbm/breast_cancer_function.Rdata')
+load('/Share2/home/lanxun3/jacklee/pancancer_cfDNA/gbm/COAD_cancer_function.Rdata')
+
+observed_path<-c("Transcriptional misregulation in cancer","MAPK signaling pathway","Ras signaling pathway",
+"ErbB signaling pathway","Focal adhesion","regulation of cytoskeleton organization",
+"extracellular structure organization","regulation of cell growth","T cell differentiation",
+"T cell activation involved in immune response","positive regulation of T cell cytokine production",
+"positive regulation of cytokine production involved in immune response")
+observed_path<-c("Focal adhesion","Complement and coagulation cascades","AMPK signaling pathway",
+"immune response-activating cell surface receptor signaling pathway","T cell proliferation",
+"T cell receptor signaling pathway")
+i=2
+all_path<-rbind(GO_gene@result,KEGG_gene@result)
+
+path_index<-match(observed_path,all_path[,2])
+new_kegg<-data.frame(all_path[path_index,c(2,5,8,9)],group=rep(i,length(observed_path)))
+#all_kegg<-new_kegg
+all_kegg<-rbind(all_kegg,new_kegg)
+save(all_kegg,file="all_kegg.Rdata")
+final_frame<-all_kegg
+final_frame<-na.omit(final_frame)
+final_frame$pvalue[final_frame$pvalue> 0.1]<-0.1
+final_frame$Description<-factor(final_frame$Description,levels=rev(observed_path))
+final_frame$group<-factor(final_frame$group,levels=c(2,1))
+
+
+pdf('gastric_gastritis_vs_healthy_pathway.pdf',width=12,height=6)
+library(ggplot2)
+p = ggplot(final_frame,aes(Description,group))
+p=p + geom_point()  
+# 修稿点的大小
+p=p + geom_point(aes(size=Count))
+# 展示三维数据
+pbubble = p+ geom_point(aes(size=Count,color=pvalue))
+# 设置渐变色
+pr = pbubble+scale_color_gradient(low="red",high = "blue")
+# 绘制p气泡图
+pr = pr+labs(color=expression(pvalue),size="Count",  
+                           x="Pathway name",y="group",title="Pathway enrichment")
+pr + theme_bw()
+dev.off()
+
+##
+setwd('/Share2/home/lanxun3/jacklee/cfDNA/gbm/TCGA')
+load('all_kegg.Rdata')
+temp_signature_1<-list()
+for(i in 1:9){
+temp_signature_1[[i]]<-unlist(strsplit(all_kegg[i,]$geneID,'/'))
+}
+names(temp_signature_1)<-all_kegg$Description[1:9]
+temp_signature_2<-list()
+for(i in 24:28){
+temp_signature_2[[i]]<-unlist(strsplit(all_kegg[i,]$geneID,'/'))
+}
+
+names(temp_signature_2)<-all_kegg$Description[10:14]
+tss_signature<-c(unlist(temp_signature_1),unlist(temp_signature_2))
+load("temp_tss_pro_table.Rdata")
+path_signature<-rownames(temp_tss_pro_table[match(tss_signature,temp_tss_pro_table$gene_name),])
+for(i in 1:length(path_signature)){
+path_signature[i]<-strsplit(path_signature[i],'.',fixed=T)[[1]][1]
+}
+features.sl <- rbind(t(gastric_tss_150),t(TT_tss_150),t(healthy_tss_150))
+#features.sl <- rbind(t(gastric_tss_150[,stage_sample1]),t(gastric_tss_150[,stage_sample2]),
+#t(gastric_tss_150[,stage_sample3]),t(TT_tss_150),t(healthy_tss_150))
+colnames(features.sl)<-paste0("tss_150_", 1:70641)
+features.sl[is.na(features.sl)]<-0
+features.sl<-as.data.frame(features.sl)
+frame_signature<-t(features.sl)[as.numeric(path_signature),]
+index<-path_signature
+rownames(frame_signature)<-temp_tss_pro_table[index,]$gene_name
+
+annotation_row = data.frame(
+  GeneClass = c(rep(c(1:9),times=unlist(lapply(temp_signature_1,length))),
+  rep(c(10:14),times=unlist(lapply(temp_signature_2,length))[unlist(lapply(temp_signature_2,length))!=0]))
+)
+
+
+library(pheatmap)
+pdf('gastric_cancer_gastritis_signature.pdf',width=10,height=10)
+frame_signature<-t(scale(t(frame_signature)))
+frame_signature[frame_signature>=0.5]<-0.5
+frame_signature[frame_signature<= -0.5]<- -0.5
+pheatmap(frame_signature,cluster_cols = F,cluster_rows = F,
+color = colorRampPalette(c("#D45252","white", "#0000B2"))(50),show_colnames = F,
+gaps_col = c(101,134),gaps_row = length(unlist(temp_signature_1)))
+dev.off()
+pdf('pathway_lable.pdf')
+pheatmap(annotation_row,cluster_cols = F,cluster_rows = F,show_colnames = F,gaps_row = length(unlist(temp_signature_1)))
+dev.off()
+
+pdf('gastric_cancer_stage_gastritis_signature.pdf',width=10,height=10)
+frame_signature<-t(scale(t(frame_signature)))
+frame_signature[frame_signature>=1]<-1
+frame_signature[frame_signature<= -1]<- -1
+pheatmap(frame_signature,cluster_cols = F,cluster_rows = F,
+color = colorRampPalette(c("#D45252","white", "#0000B2"))(50),show_colnames = F,
+gaps_col = c(37,64,91,124),gaps_row = length(unlist(temp_signature_1)))
+dev.off()
+
+b<-apply(frame_signature,1,function(x){a<-wilcox.test(x[1:101],x[135:234],alternative='less')
+return(a$p.value)})
+c<-apply(frame_signature,1,function(x){a<-wilcox.test(x[102:134],x[135:234],alternative='less')
+return(a$p.value)})
+
+frame_p<-data.frame(b,c)
+library(pheatmap)
+pdf('gastric_cancer_gastritis_p.pdf')
+frame_p[frame_p>= 0.1]<- 0.1
+pheatmap(frame_p,cluster_cols = F,cluster_rows = F,
+color = colorRampPalette(c("#D45252",'#FFA500',"white"))(50),show_colnames = F,
+gaps_row = length(unlist(temp_signature_1)))
+dev.off()
+###饼状图,p值占比
+pdf('pathway_pie_c.pdf')
+pie_df<-data.frame(annotation_row[,1],b,c)
+par(mfrow=c(5,3))
+for(i in 1:14){
+temp_matrix<-c(length(which(pie_df[pie_df[,1]%in%i,3]<=0.05)),length(which(pie_df[pie_df[,1]%in%i,3]>0.05)))
+piepercent<- paste(round(100*temp_matrix/sum(temp_matrix), 1), "%")
+pie(temp_matrix,labels=piepercent,col = rainbow(length(temp_matrix)))
+}
+dev.off()
