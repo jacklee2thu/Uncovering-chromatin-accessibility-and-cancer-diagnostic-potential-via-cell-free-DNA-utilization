@@ -1,0 +1,267 @@
+####TSS coverage
+options(stringsAsFactors=F)
+##跑出每个人要转录的TSS
+setwd("/Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA")
+patient_sample<-list.dirs(full.names = FALSE,recursive = F)
+#for(k in 1:length(patient_sample)){
+k=1
+setwd(paste0("/Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA/",patient_sample[k]))
+#system(paste0("/Share2/home/lanxun/Tools/samtools-1.3.1/bin/bin/samtools index ",patient_sample[k],"_sort.bam"))
+options(stringsAsFactors=F)
+tss_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/tss/immune/tss_pro_bed_up3000_1000.bed",sep="\t",header=F)
+
+patient_tss1000<-list()
+patient_tss150<-list()
+for(i in 1:dim(tss_bed)[1]){
+##上游3000-1000和下游1000-3000用于做金标准
+tss_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/tss/immune/tss_pro_bed_up3000_1000.bed",sep="\t",header=F)
+system(paste0("/Share2/home/lanxun/Tools/samtools-1.3.1/bin/bin/samtools",
+" depth -q 30"," -r ",tss_bed[i,1],":",tss_bed[i,2],"-",tss_bed[i,3]," ",patient_sample[k],".bam"," > ",patient_sample[k],"_temptss.txt"),intern=TRUE, wait=TRUE)
+if(file.info(paste0(patient_sample[k],"_temptss.txt"))$size == 0){
+temp_up3000_1000<-NA
+}else{
+temp_up3000_1000<-read.table(file=paste0(patient_sample[k],"_temptss.txt"),sep="\t",head=F)
+}
+system(paste0("rm /Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA/",patient_sample[k],"/",patient_sample[k],"_temptss.txt"))
+
+tss_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/tss/immune/tss_pro_bed_down1000_3000.bed",sep="\t",header=F)
+system(paste0("/Share2/home/lanxun/Tools/samtools-1.3.1/bin/bin/samtools",
+" depth -q 30"," -r ",tss_bed[i,1],":",tss_bed[i,2],"-",tss_bed[i,3]," ",patient_sample[k],".bam"," > ",patient_sample[k],"_temptss.txt"),intern=TRUE, wait=TRUE)
+if(file.info(paste0(patient_sample[k],"_temptss.txt"))$size == 0){
+temp_down1000_3000<-NA
+}else{
+temp_down1000_3000<-read.table(file=paste0(patient_sample[k],"_temptss.txt"),sep="\t",head=F)
+}
+system(paste0("rm /Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA/",patient_sample[k],"/",patient_sample[k],"_temptss.txt"))
+if(unique(is.na(temp_down1000_3000))&unique(is.na(temp_up3000_1000))){
+normal_tss_value<-NA
+}
+if(unique(is.na(temp_up3000_1000))&unique(!is.na(temp_down1000_3000))){
+normal_tss_value<-mean(temp_down1000_3000[,3])
+}
+if(unique(is.na(temp_down1000_3000))&unique(!is.na(temp_up3000_1000))){
+normal_tss_value<-mean(temp_up3000_1000[,3])
+}
+
+if(unique(!is.na(temp_down1000_3000))&unique(!is.na(temp_up3000_1000))){
+normal_tss<-rbind(temp_up3000_1000,temp_down1000_3000)
+normal_tss_value<-mean(normal_tss[,3])
+}
+
+
+##上游1000-下游1000
+tss_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/tss/immune/tss_pro_bed_up1000_down1000.bed",sep="\t",header=F)
+system(paste0("/Share2/home/lanxun/Tools/samtools-1.3.1/bin/bin/samtools",
+" depth -q 30"," -r ",tss_bed[i,1],":",tss_bed[i,2],"-",tss_bed[i,3]," ",patient_sample[k],".bam"," > ",patient_sample[k],"_temptss.txt"),intern=TRUE, wait=TRUE)
+if(file.info(paste0(patient_sample[k],"_temptss.txt"))$size == 0){
+temp_up1000_down1000<-NA
+}else{
+temp_up1000_down1000<-read.table(file=paste0(patient_sample[k],"_temptss.txt"),sep="\t",head=F)
+temp_up1000_down1000[,4]<-temp_up1000_down1000[,3]/normal_tss_value
+}
+system(paste0("rm /Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA/",patient_sample[k],"/",patient_sample[k],"_temptss.txt"))
+
+##上游150-下游50
+tss_bed<-read.table(file="/Share2/home/lanxun3/jacklee/cfDNA/tss/immune/tss_pro_bed_up150_down50.bed",sep="\t",header=F)
+system(paste0("/Share2/home/lanxun/Tools/samtools-1.3.1/bin/bin/samtools",
+" depth -q 30"," -r ",tss_bed[i,1],":",tss_bed[i,2],"-",tss_bed[i,3]," ",patient_sample[k],".bam"," > ",patient_sample[k],"_temptss.txt"),intern=TRUE, wait=TRUE)
+if(file.info(paste0(patient_sample[k],"_temptss.txt"))$size == 0){
+temp_up150_down50<-NA
+}else{
+temp_up150_down50<-read.table(file=paste0(patient_sample[k],"_temptss.txt"),sep="\t",head=F)
+temp_up150_down50[,4]<-temp_up150_down50[,3]/normal_tss_value
+}
+system(paste0("rm /Share2/home/lanxun3/jacklee/cfDNA/experiment/cfDNA/",patient_sample[k],"/",patient_sample[k],"_temptss.txt"))
+patient_tss1000[[i]]<-temp_up1000_down1000
+patient_tss150[[i]]<-temp_up150_down50
+}
+save(patient_tss1000,patient_tss150,file=paste0(patient_sample[k],"_alltss.Rdata"))
+
+###每个样本的基因表达分布图/计算每个基因在TSS1000和TSS150时的mean_coverage
+options(stringsAsFactors=F)
+setwd("/Share2/home/lanxun3/jacklee/cfDNA/experiment/TSS/data")
+gastric_sample<-dir()
+last_sample<-c()
+for(i in 1:length(gastric_sample)){
+temp_name<-strsplit(gastric_sample,"_all")
+last_sample<-c(last_sample,temp_name[[i]][1])
+}
+load("/Share2/home/lanxun3/jacklee/cfDNA/tss/all_pro_tss/tss_pro_table.Rdata")
+all_sample_tss<-list()
+for(j in 1:length(last_sample)){
+load(paste0(last_sample[j],"_alltss.Rdata"))
+tss_1000<-c()
+tss_150<-c()
+
+for(i in 1:length(patient_tss1000)){
+if(!is.na(patient_tss1000[[i]])){
+tss_1000[i]<-mean(patient_tss1000[[i]][,4])
+}else{tss_1000[i]<-NA}
+if(!is.na(patient_tss150[[i]])){
+tss_150[i]<-mean(patient_tss150[[i]][,4])
+}else{tss_150[i]<-NA}
+}
+tss_relative_coverage<-data.frame(tss_150,tss_1000)
+colnames(tss_relative_coverage)<-c("tss_150","tss_1000")
+all_sample_tss[[j]]<-tss_relative_coverage
+}
+
+
+names(all_sample_tss)<-last_sample
+save(all_sample_tss,file='../all_sample_tss.Rdata')
+####cell coverage
+setwd("/Share2/home/lanxun3/jacklee/cfDNA/experiment/TSS")
+load('all_sample_tss.Rdata')
+tss_relative_coverage<-all_sample_tss[[1]]
+library(ggplot2)
+pdf('GSE_1_cfDNA_tss.pdf')
+p<-ggplot(tss_relative_coverage,aes(x=tss_1000,y=tss_150))+geom_point(size=1)+geom_vline(aes(xintercept=1),colour="#FF0000", linetype="dashed",size=0.5)+
+geom_hline(aes(yintercept=1),colour="#FF0000", linetype="dashed",size=0.5)+ylim(0,15)
+p+theme_bw()+theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+dev.off()
+###########
+load('all_sample_tss.Rdata')
+temp_tss_150<-all_sample_tss[[1]][,1]
+temp_tss_1000<-all_sample_tss[[1]][,2]
+for(i in 2:length(all_sample_tss)){
+temp_tss_150<-cbind(temp_tss_150,all_sample_tss[[i]][,1])
+temp_tss_1000<-cbind(temp_tss_1000,all_sample_tss[[i]][,2])
+}
+colnames(temp_tss_150)<-last_sample
+colnames(temp_tss_1000)<-last_sample
+save(temp_tss_150,file='../gastric_sample_tss_150.Rdata')
+save(temp_tss_1000,file='../gastric_sample_tss_1000.Rdata')
+
+
+
+
+####fre_1000&150相对coverage小于1
+load('gastric_sample_tss_150.Rdata')
+load('gastric_sample_tss_1000.Rdata')
+load('/Share2/home/lanxun3/jacklee/cfDNA/experiment/RNA/RNA_expression/raw_cell_expression_2.Rdata')
+load("/Share2/home/lanxun3/jacklee/cfDNA/tss/all_pro_tss/tss_pro_table.Rdata")
+rownames(temp_tss_150)<-tss_pro_table$gene_name
+rownames(temp_tss_1000)<-tss_pro_table$gene_name
+
+a<-data.frame(c(temp_tss_150[,'GSE_1_cfDNA'],temp_tss_150[,'HGC_27_cfDNA'],
+temp_tss_150[,'MKN28_cfDNA_5h'],temp_tss_150[,'SGC7901_cfDNA']),
+c(rep(1,dim(temp_tss_150)[1]),rep(2,dim(temp_tss_150)[1]),rep(3,dim(temp_tss_150)[1]),rep(4,dim(temp_tss_150)[1])))
+colnames(a)<-c('tss','cell_type')
+a[,2]<-as.factor(a[,2])
+a[is.na(a)]<-0.1
+library(ggplot2)
+pdf('cfDNA_TSS150_density.pdf')
+p<-ggplot(a, aes(x = tss))
+p + geom_density(aes(fill = cell_type), alpha=0.4)+xlim(c(0,10))+
+geom_vline(aes(xintercept=1),colour="#FF0000", linetype="dashed",size=0.5)+
+geom_vline(aes(xintercept=1.5),colour="#FF0000", linetype="dashed",size=0.5)+
+theme_bw()+theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+dev.off()
+
+exp_gene<-rownames(temp_tss_150[temp_tss_150[,'SGC7901_cfDNA_5h']<=1,])
+unexp_gene<-rownames(temp_tss_150[temp_tss_150[,'SGC7901_cfDNA_5h']>=1.5,])
+unexp_gene<-setdiff(unexp_gene,intersect(exp_gene,unexp_gene))
+a<-cell_expression[intersect(exp_gene,rownames(cell_expression)),3]
+b<-cell_expression[intersect(unexp_gene,rownames(cell_expression)),3]
+wilcox.test(a,b)
+df<-data.frame(c(a,b),
+c(rep("exp",length(a)),rep("unexp",length(b))))
+colnames(df)<-c("num","group")
+library(ggpubr)
+library(digest)
+pdf('MKN28_express_TSS150.pdf',width=10,height=10)
+p<-ggboxplot(df, "group", "num",color = "group", size = 1,width=0.7,outlier.colour=NA, palette =c("#D45252",'#FFA500',"#6EA6D9"),add = "jitter")
+p+ labs(title = 'MKN28')+scale_y_log10()
+dev.off()
+
+library(ggplot2)
+library(ggpubr)
+color = c("#EE3536","#3A429B")
+pdf('SGC7901_express_violin_TSS150.pdf')
+my_comparisons <- list( c('exp','unexp') )
+df %>% ggplot(aes(x=group,y=num,fill=group))+geom_violin()+
+  geom_boxplot(width=0.2,position=position_dodge(0.9),outlier.colour = NA,fill="white")+
+  theme_bw()+
+  theme(legend.position="none",
+        axis.text.x = element_text(hjust = 0.5, vjust = 0.5),
+        axis.text.y = element_text(hjust = 0.5, vjust = 0.5),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text( size=rel(1)),
+        panel.border = element_blank(),
+        axis.line = element_line(colour = "black",size=1)
+  )+scale_fill_manual(values = color)+
+  stat_compare_means( comparisons = my_comparisons)+ labs(title = 'SGC7901')+scale_y_log10()
+dev.off()
+
+
+options(stringsAsFactors=F)
+setwd("/Share2/home/lanxun3/jacklee/cfDNA/experiment/TSS")
+load('all_sample_tss.Rdata')
+load("/Share2/home/lanxun3/jacklee/cfDNA/tss/all_pro_tss/tss_pro_table.Rdata")
+load('/Share2/home/lanxun3/jacklee/cfDNA/experiment/RNA/RNA_expression/raw_cell_expression_2.Rdata')
+
+up_genes<-names(sort(cell_expression[,'SGC7901_2'],decreasing = T)[1:500])
+down_genes<-names(sort(cell_expression[,'SGC7901_2'],decreasing = T)[19255:19754])
+
+cell_tss_up<-c()#####546,484
+for(i in 1:length(up_genes)){
+temp_index<-which(tss_pro_table$gene_name==up_genes[i])
+cell_tss_up<-c(cell_tss_up,temp_index)
+}
+cell_tss_down<-c()#####439,462
+for(i in 1:length(down_genes)){
+temp_index<-which(tss_pro_table$gene_name==down_genes[i])
+cell_tss_down<-c(cell_tss_down,temp_index)
+}
+cell_tss_index<-c(cell_tss_up,cell_tss_down)
+
+
+temp_tss_150<-all_sample_tss[[1]][,1]
+temp_tss_1000<-all_sample_tss[[1]][,2]
+for(i in 2:length(all_sample_tss)){
+temp_tss_150<-cbind(temp_tss_150,all_sample_tss[[i]][,1])
+temp_tss_1000<-cbind(temp_tss_1000,all_sample_tss[[i]][,2])
+}
+colnames(temp_tss_150)<-names(all_sample_tss)
+colnames(temp_tss_1000)<-names(all_sample_tss)
+
+temp_tss_150<-temp_tss_150[cell_tss_index,]
+temp_tss_1000<-temp_tss_1000[cell_tss_index,]
+
+####boxplot
+pre500_1000<-temp_tss_1000[1:length(cell_tss_up),'SGC7901_cfDNA_5h']#[1:484,3]
+post500_1000<-temp_tss_1000[(length(cell_tss_up)+1):dim(temp_tss_1000)[1],'SGC7901_cfDNA_5h']#[485:946,3]
+wilcox.test(pre500_1000,post500_1000)
+wilcox.test(pre500_1000,post500_1000,alternative='less')
+
+pre500_150<-temp_tss_150[1:length(cell_tss_up),'SGC7901_cfDNA_5h']#[1:484,3]
+post500_150<-temp_tss_150[(length(cell_tss_up)+1):dim(temp_tss_1000)[1],'SGC7901_cfDNA_5h']#[485:946,3]
+wilcox.test(pre500_150,post500_150)
+wilcox.test(pre500_150,post500_150,alternative='less')
+
+df<-data.frame(c(pre500_150,post500_150),c(rep("pre_500",length(pre500_150)),
+rep("post_500",length(post500_150))))
+colnames(df)<-c("num","group")
+
+library(ggplot2)
+library(ggpubr)
+color = c("#EE3536","#3A429B")
+pdf('SGC7901_diff_exp_violin_tss_150.pdf')
+my_comparisons <- list( c('exp','unexp') )
+df %>% ggplot(aes(x=group,y=num,fill=group))+geom_violin()+
+  geom_boxplot(width=0.2,position=position_dodge(0.9),outlier.colour = NA,fill="white")+
+  theme_bw()+
+  theme(legend.position="none",
+        axis.text.x = element_text(hjust = 0.5, vjust = 0.5),
+        axis.text.y = element_text(hjust = 0.5, vjust = 0.5),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text( size=rel(1)),
+        panel.border = element_blank(),
+        axis.line = element_line(colour = "black",size=1)
+  )+scale_fill_manual(values = color)+
+  stat_compare_means( comparisons = my_comparisons)+ labs(title = 'SGC7901')+ylim(0,5)
+dev.off()
