@@ -1,4 +1,4 @@
-########gastric single cell为细胞培养做准备
+########
 options(stringsAsFactors=F)
 setwd('/Share2/home/lanxun3/jacklee/cfDNA/filed_stanford_gastic_singlecell/count')
 sample_all<-dir()
@@ -36,7 +36,7 @@ pbmc_mat<-t(temp_mat)
 save(pbmc_mat,file='pbmc_mat.Rdata')
 
 
-#####细胞分类
+#####
 options(stringsAsFactors=F)
 setwd("/Share2/home/lanxun3/jacklee/cfDNA/filed_stanford_gastic_singlecell")
 load('tumor_mat.Rdata')
@@ -49,14 +49,14 @@ library(Seurat)
 all_sample <- CreateSeuratObject(counts = all_sample_file, project = "all_sample",min.cells = 3,min.features = 200)
 all_sample[["percent.mt"]] <- PercentageFeatureSet(all_sample, pattern = "^MT-")
 head(all_sample@meta.data, 5)
-all_sample <- subset(all_sample, subset = nFeature_RNA > 200 & percent.mt < 20 )#####此处没有限制4000上限
+all_sample <- subset(all_sample, subset = nFeature_RNA > 200 & percent.mt < 20 )#####
 
 dim(all_sample@assays$RNA)
 #save filtered object
 
 save(all_sample,file = "all_sample_qc.Rdata")
 
-######细胞分类,findmarker
+######
 options(stringsAsFactors=F)
 setwd("/Share2/home/lanxun3/jacklee/cfDNA/filed_stanford_gastic_singlecell/data_precess")
 load('all_sample_qc.Rdata')
@@ -77,7 +77,7 @@ dev.off()
 set.seed(12345678)
 all_sample_pca <- FindNeighbors(all_sample_pca,dims = 1:15)
 all_sample_pca <- FindClusters(all_sample_pca,resolution = 0.8)
-sample_cluster<-Idents(all_sample_pca)#####样本和cluster对应
+sample_cluster<-Idents(all_sample_pca)#####
 sample_summary<-data.frame(names(sample_cluster),sample_cluster)
 colnames(sample_summary)<-c('sample_name','cluster')
 table(sample_summary$cluster)
@@ -116,7 +116,7 @@ pdf('marker_gene.pdf')
 DoHeatmap(all_sample_umap, features = top10$gene) + NoLegend()
 dev.off()
 
-########可视化特征基因
+########
 load('c_spatial_markers.Rdata')
 feature_gene<-c('KRT18','EPCAM','CD3D','CD68','CHGA','CDH5','DCN','ID2','MS4A1','CD79A','IGLL5','MS4A2')
 pdf('feature_gene_MEIS2.pdf')
@@ -173,7 +173,7 @@ dev.off()
 
 
 
-#####PBMC细胞分类,比例
+#####PBMC
 options(stringsAsFactors=F)
 setwd("/Share2/home/lanxun3/jacklee/cfDNA/filed_stanford_gastic_singlecell")
 load('pbmc_mat.Rdata')
@@ -184,14 +184,14 @@ library(Seurat)
 pbmc_sample <- CreateSeuratObject(counts = pbmc_sample_file, project = "pbmc_sample",min.cells = 3,min.features = 200)
 pbmc_sample[["percent.mt"]] <- PercentageFeatureSet(pbmc_sample, pattern = "^MT-")
 head(pbmc_sample@meta.data, 5)
-pbmc_sample <- subset(pbmc_sample, subset = nFeature_RNA > 200 & percent.mt < 20 )#####此处没有限制4000上限
+pbmc_sample <- subset(pbmc_sample, subset = nFeature_RNA > 200 & percent.mt < 20 )
 
 dim(pbmc_sample@assays$RNA)
 #save filtered object
 
 save(pbmc_sample,file = "pbmc_sample_qc.Rdata")
 
-######细胞分类,findmarker
+######
 options(stringsAsFactors=F)
 setwd("/Share2/home/lanxun3/jacklee/cfDNA/filed_stanford_gastic_singlecell/pbmc")
 load('pbmc_sample_qc.Rdata')
@@ -249,7 +249,7 @@ pdf('marker_gene.pdf')
 DoHeatmap(pbmc_sample_umap, features = top10$gene) + NoLegend()
 dev.off()
 
-########可视化特征基因
+#######
 load('c_spatial_markers.Rdata')
 feature_gene<-c('CD3D','MS4A1','CD79A','NKG7','CD68','AIF1','FCER1A')
 pdf('feature_gene_MEIS2.pdf')
