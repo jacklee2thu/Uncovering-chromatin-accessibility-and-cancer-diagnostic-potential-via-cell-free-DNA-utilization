@@ -1,6 +1,6 @@
-# Chromatin-accessibility-and-cell-types-of-origin-inferred-based-on-cell-free-DNA
+# Non-invasively identifying cancer-specific chromatin accessibility patterns and deciphering the cell type origin of cell-free DNA
 ### Jie Li, Xun Lan
 ### Schematic overview and multi-omics cohorts.
-### Cell lines, including SGC7901, GES1, HGC27, and MKN28, are used to explore the relationship between cfDNA and chromatin accessibility in vitro. Subsequently, 500 plasma samples, including samples from 21 disease types; 182900 cells from STAD and PDAC scATAC and scRNA seq datasets; 803 samples of bulk pan-cancer ATAC seq including samples from 23 cancer types; 1619 bulk RNA seq samples are assessed to validate the correlation between cfDNA features and chromatin accessibility. Finally, simplified target gene probe seq improves the superiority of application of cfDNA in 80 plasma samples.
+### Cell lines, including SGC7901, GES1, HGC27, and MKN28, are used to explore the relationship between cfDNA and chromatin accessibility in vitro. Subsequently, 546 plasma samples, including samples from 21 disease types; 182900 cells from STAD and PDAC scATAC and scRNA seq datasets; 803 samples of bulk pan-cancer ATAC seq including samples from 23 cancer types; 1619 bulk RNA seq samples are assessed to validate the correlation between cfDNA features and chromatin accessibility. Finally, simplified target gene probe seq improves the superiority of application of cfDNA in 80 plasma samples.
 #### li-j19@mails.tsinghua.edu.cn
 #### xlan@tsinghua.edu.cn
